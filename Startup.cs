@@ -10,10 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using fakeApi.Repositories.Implementation;
-using fakeApi.Repositories.Interfaces;
+using fakewebapi.Repositories.Implementation;
+using fakewebapi.Repositories.Interfaces;
 
-namespace fakeApi
+namespace fakewebapi
 {
     public class Startup
     {

@@ -1,13 +1,13 @@
-﻿using fakeApi.Helpers;
-using fakeApi.Models;
+﻿using fakewebapi.Helpers;
+using fakewebapi.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using fakeApi.Repositories.Interfaces;
+using fakewebapi.Repositories.Interfaces;
 
-namespace fakeApi.Controllers
+namespace fakewebapi.Controllers
 {
     [ApiController]
     [Route("/api/posts")]
