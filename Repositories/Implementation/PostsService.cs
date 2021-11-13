@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using fakewebapi.DTO;
+using fakewebapi.Helpers;
 using fakewebapi.Models;
 using fakewebapi.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -10,70 +12,99 @@ namespace fakewebapi.Repositories.Implementation
 {
     public class PostsService : IPosts
     {
-        public async Task<List<Post>> GetPostsFromDb(List<Post> posts, string orderBy, string filter, string sort)
+        public List<Post> GetPosts(string orderBy, string filter, string sort)
         {
-            List<Post> SortedList;
+            var utils = new Utils();
+            var posts = utils.readFromFile();
             if (orderBy.Equals("id"))
             {
-                //ListSort listSort = new ListSort();
-                //posts.Sort(listSort);
-                posts.OrderBy(o => o.Id).ToList();
-                //posts = SortedList;
                 if (sort.Equals("desc"))
                 {
-                    posts.OrderByDescending(p => p.Id).ToList();
+                    posts = posts.OrderByDescending(p => p.Id).ToList();
+                }
+                else
+                {
+                    posts = posts.OrderBy(o => o.Id).ToList();
                 }
             }
-            else if (orderBy.Equals("title"))
+
+            if (orderBy.Equals("title"))
             {
-                posts.OrderBy(o => o.Title).ToList();
-                //posts = SortedList;
                 if (sort.Equals("desc"))
                 {
-                    posts.OrderByDescending(p => p.Title).ToList();
-                }
-            }
-            else
-            {
-                posts.OrderBy(o => o.Author).ToList();
-                //posts = SortedList;
-                if (sort.Equals("desc"))
+                    posts = posts.OrderByDescending(p => p.Title).ToList();
+                }else
                 {
-                    posts.OrderByDescending(p => p.Author).ToList();
+                    posts = posts.OrderBy(o => o.Title).ToList();
                 }
             }
 
             return posts;
         }
 
-        public Task<IActionResult> GetPost()
+        public Post GetPost(int id)
         {
-            throw new NotImplementedException();
+            var utils = new Utils();
+            var posts = utils.readFromFile();
+            var post = posts.FirstOrDefault(p => p.Id == id);
+            return post;
         }
 
-        public Task<IActionResult> GetPostByAuthor()
+        public Post GetPostByAuthor(string author)
         {
-            throw new NotImplementedException();
+            var utils = new Utils();
+            var posts = utils.readFromFile();
+            Post post = posts.FirstOrDefault(p => p.Author == author);
+            
+            return post;
         }
 
-        public Task<IActionResult> CountPost()
+        public int CountPost()
         {
-            throw new NotImplementedException();
+            var utils = new Utils();
+            var posts = utils.readFromFile();
+            return posts.Count;
         }
 
-        public Task<IActionResult> AddPost()
+        public bool AddPost(PostDTO post)
         {
-            throw new NotImplementedException();
+            var utils = new Utils();
+            var posts = utils.readFromFile();
+            
+            var newPost = new Post
+            {
+                Id = posts.Max(p => p.Id) + 1,
+                Author = post.Author,
+                Content = post.Content,
+                Title = post.Title
+            };
+
+            posts.Add(newPost);
+            return utils.saveToFile(posts);
         }
 
-        public Task<IActionResult> UpdatePost()
+        public bool UpdatePost(Post post)
         {
-            throw new NotImplementedException();
+            var utils = new Utils();
+            var posts = utils.readFromFile();
+            var singlePost = posts.Remove(posts.Single(x => x.Id == post.Id));
+            var newPost = new Post
+            {
+                Id = post.Id,
+                Title = post.Title,
+                Content = post.Content,
+                Author = post.Author
+            };
+            posts.Add(newPost);
+            return utils.saveToFile(posts);
         }
 
-        public Task<IActionResult> DeletePost()
+        public bool DeletePost(int id)
         {
-            throw new NotImplementedException();
+            var utils = new Utils();
+            var posts = utils.readFromFile();
+            var status = posts.Remove(posts.Single(x => x.Id == id));
+            return utils.saveToFile(posts);
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using fakewebapi.Repositories.Interfaces;
+using fakewebapi.DTO;
 
 namespace fakewebapi.Controllers
 {
@@ -21,79 +22,48 @@ namespace fakewebapi.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetPosts(string orderBy, string filter, string sort)
+        public IActionResult GetPosts(string orderBy = "id", string filter = "", string sort = "asc")
         {
-            var utils = new Utils();
-            var posts = utils.readFromFile();
-            if ( !string.IsNullOrEmpty( orderBy ) )
+            if(!orderBy.Equals("id") && !orderBy.Equals("title"))
             {
-
-                _posts.GetPostsFromDb(posts, orderBy, filter, sort);
+                return BadRequest("You should use id or title property of ordering");
             }
 
-            if (!string.IsNullOrEmpty(filter))
+            if (string.IsNullOrEmpty(orderBy) || string.IsNullOrEmpty(sort))
             {
-                if (filter.Equals("name"))
-                {
-                    //foreach (var post in posts)
-                    //{
-                    //    if (post.Title == filter)
-                    //    {
-                    //        posts.Clear();
-                    //        posts.Add(post);
-                    //    }
-                    //}
-                    posts.Where(p => p.Title == "Another post");
-                }
+                return BadRequest("Orderby and sort cannot be empty");
             }
-            return Ok(posts);
+
+            return Ok(_posts.GetPosts(orderBy, filter, sort));
         }
 
         [HttpGet("{id}")]
         public IActionResult GetPost(int id)
         {
-            var utils = new Utils();
-            var posts = utils.readFromFile();
-            Post result = null;
-            
-            foreach (var post in posts)
-            {
-                if (post.Id == id)
-                {
-                    result = post;
-                    return Ok(result);
-                }
-            }
-
-            return NotFound($"Post {id} is not inside in database");
+            var posts = _posts.GetPost(id);
+            return Ok(posts);
         }
 
         [HttpGet("author")]
-        public IActionResult GetPostsByAuthor ( string name )
+        public IActionResult GetPostsByAuthor (string author = "")
         {
-            var utils = new Utils();
-            var posts = utils.readFromFile();
-            Post post = null;
-
-            post = posts.FirstOrDefault( p => p.Author == name );
-            return Ok( post );
+            var posts = _posts.GetPostByAuthor(author);
+            if (posts == null)
+            {
+                return NotFound($"Posts by author with author {author} not found");
+            }
+            return Ok(posts);
         }
 
         [HttpGet("count")]
         public IActionResult CountPosts()
         {
-            var utils = new Utils();
-            var posts = utils.readFromFile();
-            int number = posts.Count();
-            return Ok($"total posts number: {number}");
+            return Ok(_posts.CountPost());
         }
 
         [HttpPost("add")]
-        public IActionResult AddPost(Post post)
+        public IActionResult AddPost(PostDTO post)
         {
-            var utils = new Utils();
-            var posts = utils.readFromFile();
-
             if (string.IsNullOrEmpty(post.Author))
             {
                 return BadRequest("Author is not defined");
@@ -101,25 +71,46 @@ namespace fakewebapi.Controllers
 
             if (string.IsNullOrEmpty(post.Title))
             {
-                return BadRequest("Post title is not defined");
+                return BadRequest("Title is not defined");
             }
 
             if (string.IsNullOrEmpty(post.Content))
             {
                 return BadRequest("Post has no body");
             }
+            
+            var added = _posts.AddPost(post);
 
-            var newPost = new Post
+            if (!added)
             {
-                Id = posts.Max(p => p.Id) + 1,
-                Author = post.Author,
-                Content = post.Content,
-                Title = post.Title
-            };
+                return BadRequest("Failed to save file");
+            }
 
-            posts.Add(newPost);
-            utils.saveToFile(posts);
             return Ok("Post added");
+        }
+
+        [HttpDelete("delete/{id}")]
+        public IActionResult DeletePost(int id)
+        {
+            var deleted = _posts.DeletePost(id);
+            if (!deleted)
+            {
+                return BadRequest("Failed to delete");
+            }
+
+            return Ok($"Post with id: {id} deleted");
+        }
+
+        [HttpPut("update")]
+        public IActionResult UpdatePost(Post post)
+        {
+            var updated = _posts.UpdatePost(post);
+            if (!updated)
+            {
+                return BadRequest("Failed to update");
+            }
+
+            return Ok($"Updated post with id: {post.Id} successfully");
         }
     }
 }

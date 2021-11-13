@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.IO;
-using fakeApi.Models;
+using fakewebapi.Models;
 using Newtonsoft.Json;
 
-namespace fakeApi.Helpers
+namespace fakewebapi.Helpers
 {
     public class Utils
     {
-        private readonly string Path = "data/posts.json";
+        private readonly string PostPath = "data/posts.json";
         private readonly string CommentsPath = "data/comments.json";
+        private readonly string AuthorsPath = "data/authors.json";
 
         public Utils()
         {
@@ -21,7 +22,7 @@ namespace fakeApi.Helpers
         public List<Post> readFromFile()
         {
             List<Post> posts;
-            using (StreamReader r = new StreamReader(this.Path))
+            using (StreamReader r = new StreamReader(this.PostPath))
             {
                 string json = r.ReadToEnd();
                 posts = JsonConvert.DeserializeObject<List<Post>>(json);
@@ -31,14 +32,35 @@ namespace fakeApi.Helpers
             return posts;
         }
 
-        public void saveToFile(List<Post> posts)
+        public bool saveToFile(List<Post> posts)
         {
-            File.WriteAllText( this.Path, JsonConvert.SerializeObject( posts ) );
+            bool stat = true;
+            try
+            {
+                File.WriteAllText( this.PostPath, JsonConvert.SerializeObject( posts ) );
+                stat = true;
+            }
+            catch (Exception)
+            {
+                stat = false;
+            }
+
+            return stat;
         }
 
-        public void saveToFile(List<Comment> comments)
+        public bool saveToFile(List<Comment> comments)
         {
-            File.WriteAllText( this.CommentsPath, JsonConvert.SerializeObject( comments ) );
+            bool status = true;
+            try
+            {
+                File.WriteAllText( this.CommentsPath, JsonConvert.SerializeObject( comments ) );
+                status = true;
+            }catch
+            {
+                status = false;
+            }
+
+            return status;
         }
 
         public List<Comment> readComments()
@@ -52,6 +74,19 @@ namespace fakeApi.Helpers
             }
 
             return comments;
+        }
+
+        public List<Author> readAuthors()
+        {
+            List<Author> authors;
+            using (StreamReader r = new StreamReader(this.AuthorsPath))
+            {
+                string json = r.ReadToEnd();
+                authors = JsonConvert.DeserializeObject<List<Author>>(json);
+
+            }
+
+            return authors;
         }
     }
 }

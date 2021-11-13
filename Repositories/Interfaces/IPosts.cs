@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using fakewebapi.DTO;
 using fakewebapi.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,18 +10,18 @@ namespace fakewebapi.Repositories.Interfaces
 {
     public interface IPosts
     {
-        public Task<List<Post>> GetPostsFromDb(List<Post> posts, string orderby, string filter, string sort);
+        public List<Post> GetPosts(string orderby, string filter, string sort);
 
-        public Task<IActionResult> GetPost();
+        public Post GetPost(int id);
 
-        public Task<IActionResult> GetPostByAuthor();
+        public Post GetPostByAuthor(string author);
 
-        public Task<IActionResult> CountPost();
+        public int CountPost();
 
-        public Task<IActionResult> AddPost();
+        public bool AddPost(PostDTO post);
 
-        public Task<IActionResult> UpdatePost();
+        public bool UpdatePost(Post post);
 
-        public Task<IActionResult> DeletePost();
+        public bool DeletePost(int id);
     }
 }
